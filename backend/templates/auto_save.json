@@ -1,0 +1,165 @@
+{
+    "name": "Auto Backup",
+    "description": "Automatically backs up modified documents to a backup folder",
+    "is_template": true,
+    "nodes": [
+        {
+            "id": "source-1",
+            "type": "source",
+            "position": {
+                "x": 100,
+                "y": 150
+            },
+            "data": {
+                "label": "File Watcher",
+                "source_type": "filesystem",
+                "description": "Watches for file modifications",
+                "watch_paths": [
+                    "C:\\Users\\Documents"
+                ],
+                "patterns": [
+                    "*.docx",
+                    "*.xlsx",
+                    "*.pptx",
+                    "*.txt",
+                    "*.md"
+                ]
+            }
+        },
+        {
+            "id": "filter-1",
+            "type": "filter",
+            "position": {
+                "x": 350,
+                "y": 150
+            },
+            "data": {
+                "label": "Modified Only",
+                "filter": {
+                    "type": "boolean",
+                    "params": {
+                        "field": "event_type",
+                        "operator": "equals",
+                        "value": "modified"
+                    }
+                }
+            }
+        },
+        {
+            "id": "filter-2",
+            "type": "filter",
+            "position": {
+                "x": 350,
+                "y": 300
+            },
+            "data": {
+                "label": "Created Only",
+                "filter": {
+                    "type": "boolean",
+                    "params": {
+                        "field": "event_type",
+                        "operator": "equals",
+                        "value": "created"
+                    }
+                }
+            }
+        },
+        {
+            "id": "transformer-1",
+            "type": "transformer",
+            "position": {
+                "x": 600,
+                "y": 150
+            },
+            "data": {
+                "label": "Generate Backup Path",
+                "transformer": {
+                    "type": "format_string",
+                    "params": {
+                        "template": "C:\\Backups\\{filename}_{_timestamp}",
+                        "output_key": "backup_path"
+                    }
+                }
+            }
+        },
+        {
+            "id": "action-1",
+            "type": "action",
+            "position": {
+                "x": 850,
+                "y": 150
+            },
+            "data": {
+                "label": "Copy to Backup",
+                "action_type": "file_operation",
+                "params": {
+                    "operation": "copy",
+                    "destination": "{backup_path}",
+                    "create_dirs": true
+                },
+                "policy": {
+                    "type": "debounce",
+                    "params": {
+                        "delay_seconds": 5
+                    }
+                }
+            }
+        },
+        {
+            "id": "action-2",
+            "type": "action",
+            "position": {
+                "x": 850,
+                "y": 300
+            },
+            "data": {
+                "label": "Backup Notification",
+                "action_type": "notification",
+                "params": {
+                    "title": "File Backed Up",
+                    "message": "{filename} has been backed up",
+                    "timeout": 5
+                },
+                "policy": {
+                    "type": "rate_limit",
+                    "params": {
+                        "max_executions": 5,
+                        "window_seconds": 60
+                    }
+                }
+            }
+        }
+    ],
+    "edges": [
+        {
+            "id": "e1-f1",
+            "source": "source-1",
+            "target": "filter-1"
+        },
+        {
+            "id": "e1-f2",
+            "source": "source-1",
+            "target": "filter-2"
+        },
+        {
+            "id": "ef1-t1",
+            "source": "filter-1",
+            "target": "transformer-1"
+        },
+        {
+            "id": "ef2-t1",
+            "source": "filter-2",
+            "target": "transformer-1"
+        },
+        {
+            "id": "et1-a1",
+            "source": "transformer-1",
+            "target": "action-1"
+        },
+        {
+            "id": "ea1-a2",
+            "source": "action-1",
+            "target": "action-2"
+        }
+    ]
+}

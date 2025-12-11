@@ -1,0 +1,220 @@
+{
+    "name": "Focus Mode",
+    "description": "Triggers notifications when switching to/from focused work applications",
+    "is_template": true,
+    "nodes": [
+        {
+            "id": "source-1",
+            "type": "source",
+            "position": {
+                "x": 100,
+                "y": 200
+            },
+            "data": {
+                "label": "Window Focus",
+                "source_type": "window_focus",
+                "description": "Monitors active window changes"
+            }
+        },
+        {
+            "id": "filter-work",
+            "type": "filter",
+            "position": {
+                "x": 350,
+                "y": 100
+            },
+            "data": {
+                "label": "Work Apps",
+                "filter": {
+                    "type": "composite",
+                    "params": {
+                        "operator": "or",
+                        "filters": [
+                            {
+                                "type": "boolean",
+                                "params": {
+                                    "field": "process_name",
+                                    "operator": "contains",
+                                    "value": "Code"
+                                }
+                            },
+                            {
+                                "type": "boolean",
+                                "params": {
+                                    "field": "process_name",
+                                    "operator": "contains",
+                                    "value": "EXCEL"
+                                }
+                            },
+                            {
+                                "type": "boolean",
+                                "params": {
+                                    "field": "process_name",
+                                    "operator": "contains",
+                                    "value": "WORD"
+                                }
+                            },
+                            {
+                                "type": "boolean",
+                                "params": {
+                                    "field": "process_name",
+                                    "operator": "contains",
+                                    "value": "Notion"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "id": "filter-distraction",
+            "type": "filter",
+            "position": {
+                "x": 350,
+                "y": 300
+            },
+            "data": {
+                "label": "Distraction Apps",
+                "filter": {
+                    "type": "composite",
+                    "params": {
+                        "operator": "or",
+                        "filters": [
+                            {
+                                "type": "boolean",
+                                "params": {
+                                    "field": "process_name",
+                                    "operator": "contains",
+                                    "value": "chrome"
+                                }
+                            },
+                            {
+                                "type": "boolean",
+                                "params": {
+                                    "field": "process_name",
+                                    "operator": "contains",
+                                    "value": "Discord"
+                                }
+                            },
+                            {
+                                "type": "boolean",
+                                "params": {
+                                    "field": "process_name",
+                                    "operator": "contains",
+                                    "value": "Slack"
+                                }
+                            },
+                            {
+                                "type": "boolean",
+                                "params": {
+                                    "field": "window_title",
+                                    "operator": "contains",
+                                    "value": "YouTube"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "id": "filter-time",
+            "type": "filter",
+            "position": {
+                "x": 600,
+                "y": 300
+            },
+            "data": {
+                "label": "Work Hours",
+                "filter": {
+                    "type": "time_window",
+                    "params": {
+                        "start_time": "09:00",
+                        "end_time": "17:00",
+                        "days_of_week": [
+                            0,
+                            1,
+                            2,
+                            3,
+                            4
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "id": "action-focus",
+            "type": "action",
+            "position": {
+                "x": 600,
+                "y": 100
+            },
+            "data": {
+                "label": "Focus Started",
+                "action_type": "notification",
+                "params": {
+                    "title": "🎯 Focus Mode",
+                    "message": "You're now working in {process_name}. Stay focused!",
+                    "timeout": 3
+                },
+                "policy": {
+                    "type": "cooldown",
+                    "params": {
+                        "cooldown_seconds": 300
+                    }
+                }
+            }
+        },
+        {
+            "id": "action-distract",
+            "type": "action",
+            "position": {
+                "x": 850,
+                "y": 300
+            },
+            "data": {
+                "label": "Distraction Alert",
+                "action_type": "notification",
+                "params": {
+                    "title": "⚠️ Distraction Detected",
+                    "message": "You opened {process_name}. Is this necessary right now?",
+                    "timeout": 10
+                },
+                "policy": {
+                    "type": "cooldown",
+                    "params": {
+                        "cooldown_seconds": 600
+                    }
+                }
+            }
+        }
+    ],
+    "edges": [
+        {
+            "id": "e1-work",
+            "source": "source-1",
+            "target": "filter-work"
+        },
+        {
+            "id": "e1-distract",
+            "source": "source-1",
+            "target": "filter-distraction"
+        },
+        {
+            "id": "ework-focus",
+            "source": "filter-work",
+            "target": "action-focus"
+        },
+        {
+            "id": "edistract-time",
+            "source": "filter-distraction",
+            "target": "filter-time"
+        },
+        {
+            "id": "etime-alert",
+            "source": "filter-time",
+            "target": "action-distract"
+        }
+    ]
+}

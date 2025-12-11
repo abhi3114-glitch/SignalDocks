@@ -1,0 +1,150 @@
+{
+    "name": "Battery Saver",
+    "description": "Notifies when battery is low and can suspend high-CPU processes",
+    "is_template": true,
+    "nodes": [
+        {
+            "id": "source-1",
+            "type": "source",
+            "position": {
+                "x": 100,
+                "y": 150
+            },
+            "data": {
+                "label": "Battery Monitor",
+                "source_type": "battery",
+                "description": "Monitors battery level and charging status"
+            }
+        },
+        {
+            "id": "filter-1",
+            "type": "filter",
+            "position": {
+                "x": 350,
+                "y": 150
+            },
+            "data": {
+                "label": "Low Battery Check",
+                "filter": {
+                    "type": "boolean",
+                    "params": {
+                        "field": "percent",
+                        "operator": "less_than",
+                        "value": 20
+                    }
+                }
+            }
+        },
+        {
+            "id": "filter-2",
+            "type": "filter",
+            "position": {
+                "x": 600,
+                "y": 150
+            },
+            "data": {
+                "label": "Not Charging",
+                "filter": {
+                    "type": "boolean",
+                    "params": {
+                        "field": "plugged",
+                        "operator": "equals",
+                        "value": false
+                    }
+                }
+            }
+        },
+        {
+            "id": "action-1",
+            "type": "action",
+            "position": {
+                "x": 850,
+                "y": 100
+            },
+            "data": {
+                "label": "Low Battery Alert",
+                "action_type": "notification",
+                "params": {
+                    "title": "⚠️ Low Battery Warning",
+                    "message": "Battery at {percent}%. Please connect charger.",
+                    "timeout": 15
+                },
+                "policy": {
+                    "type": "cooldown",
+                    "params": {
+                        "cooldown_seconds": 300
+                    }
+                }
+            }
+        },
+        {
+            "id": "filter-3",
+            "type": "filter",
+            "position": {
+                "x": 600,
+                "y": 300
+            },
+            "data": {
+                "label": "Critical Battery",
+                "filter": {
+                    "type": "boolean",
+                    "params": {
+                        "field": "percent",
+                        "operator": "less_than",
+                        "value": 10
+                    }
+                }
+            }
+        },
+        {
+            "id": "action-2",
+            "type": "action",
+            "position": {
+                "x": 850,
+                "y": 300
+            },
+            "data": {
+                "label": "Critical Alert",
+                "action_type": "notification",
+                "params": {
+                    "title": "🔴 CRITICAL: Battery at {percent}%",
+                    "message": "System may shut down soon! Save your work immediately.",
+                    "timeout": 30
+                },
+                "policy": {
+                    "type": "cooldown",
+                    "params": {
+                        "cooldown_seconds": 120
+                    }
+                }
+            }
+        }
+    ],
+    "edges": [
+        {
+            "id": "e1-2",
+            "source": "source-1",
+            "target": "filter-1"
+        },
+        {
+            "id": "e2-3",
+            "source": "filter-1",
+            "target": "filter-2"
+        },
+        {
+            "id": "e3-4",
+            "source": "filter-2",
+            "target": "action-1"
+        },
+        {
+            "id": "e2-5",
+            "source": "filter-1",
+            "target": "filter-3"
+        },
+        {
+            "id": "e5-6",
+            "source": "filter-3",
+            "target": "action-2"
+        }
+    ]
+}
